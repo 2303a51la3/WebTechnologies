@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html ng-app="libraryManagement">
+<head>
+  <title>Library Management</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+  <style>
+    table {
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body ng-controller="libraryController">
+  <h1>Library App</h1>
+  <table>
+    <tr>
+      <th>Category</th>
+      <th>Count</th>
+    </tr>
+    <tr ng-repeat="book in library">
+      <td>{{ book.category }}</td>
+      <td><input type="number" ng-model="book.count" /></td>
+    </tr>
+  </table>
+  <form ng-submit="addCategory()">
+    <input type="text" ng-model="newCategory" placeholder="Add new category" />
+    <input type="number" ng-model="newCount" placeholder="Initial count" />
+    <button type="submit">Add</button>
+  </form>
+  <script src="script.js"></script>
+</body>
+</html>
+
+
+<script>
+angular.module('libraryManagement', [])
+.controller('libraryController', ['$scope', function($scope) {
+  $scope.library = [
+    { category: 'Fiction', count: 120 },
+    { category: 'Non-Fiction', count: 80 },
+    { category: 'Science', count: 150 },
+    { category: 'Mathematics', count: 70 }
+  ];
+
+  $scope.addCategory = function() {
+    $scope.library.push({ category: $scope.newCategory, count: $scope.newCount });
+    $scope.newCategory = '';
+    $scope.newCount = '';
+  };
+}]);
+</script>
+
