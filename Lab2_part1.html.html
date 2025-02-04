@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html ng-app="weatherApp">
+<head>
+    <title>Weather Dashboard</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .weather-display {
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        input {
+            padding: 10px;
+            width: 60%;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 15px;
+        }
+        .favorites {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body ng-controller="WeatherCtrl">
+    <h1>Weather Dashboard</h1>
+    
+    <div class="search-section">
+        <input 
+            type="text" 
+            ng-model="city" 
+            placeholder="Enter city name"
+            ng-keyup="$event.keyCode == 13 && fetchWeather()"
+        >
+        <button ng-click="fetchWeather()">Get Weather</button>
+    </div>
+
+    <div ng-if="errorMessage" class="error">
+        {{ errorMessage }}
+    </div>
+
+    <div ng-if="weatherData" class="weather-display">
+        <h2>{{ weatherData.name }}</h2>
+        <p>Temperature: {{ weatherData.main.temp | kelvinToCelsius }}°C</p>
+        <p>Humidity: {{ weatherData.main.humidity }}%</p>
+        <p>Conditions: {{ weatherData.weather[0].description }}</p>
+        <button ng-click="addToFavorites()">Add to Favorites</button>
+    </div>
+
+    <div class="favorites" ng-if="favorites.length">
+        <h3>Favorite Cities</h3>
+        <div>
+            <button 
+                ng-repeat="favCity in favorites | orderBy:''"
+                ng-click="loadFavorite(favCity)"
+                style="margin: 5px;"
+            >
+                {{ favCity }}
+            </button>
+        </div>
+    </div>
+
+    <script>
+        angular.module('weatherApp', [])
+        .filter('kelvinToCelsius', function() {
+            return function(kelvin) {
+                return Math.round(kelvin - 273.15);
+            };
+        })
+        .controller('WeatherCtrl', ['$scope', '$http', function($scope, $http) {
+            // IMPORTANT: Replace with your actual OpenWeatherMap API key
+            $scope.API_KEY = 'b3c8b22c07f8d830c97a4774bb9b24c6';
+            $scope.favorites = [];
+
+            $scope.fetchWeather = function() {
+                if (!$scope.city) return;
+
+                const url = `https://api.openweathermap.org/data/2.5/weather?q=${$scope.city}&appid=${$scope.API_KEY}`;
+                
+                $http.get(url)
+                    .then(function(response) {
+                        $scope.weatherData = response.data;
+                        $scope.errorMessage = null;
+                    })
+                    .catch(function(error) {
+                        $scope.errorMessage = error.data?.message || 'City not found';
+                        $scope.weatherData = null;
+                    });
+            };
+
+            $scope.addToFavorites = function() {
+                const cityName = $scope.weatherData.name;
+                if (!$scope.favorites.includes(cityName)) {
+                    $scope.favorites.push(cityName);
+                }
+            };
+
+            $scope.loadFavorite = function(city) {
+                $scope.city = city;
+                $scope.fetchWeather();
+            };
+        }]);
+    </script>
+</body>
+</html>
